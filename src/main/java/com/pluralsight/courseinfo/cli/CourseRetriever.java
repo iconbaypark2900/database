@@ -1,18 +1,22 @@
 package com.pluralsight.courseinfo.cli;
 
 import com.pluralsight.courseinfo.cli.service.CourseRetrievalService;
+import com.pluralsight.courseinfo.cli.service.PluralsightCourse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.List;
+
+import static java.util.Arrays.stream;
+import static java.util.function.Predicate.not;
 
 public class CourseRetriever {
     private static final Logger LOG = LoggerFactory.getLogger(CourseRetriever.class);
     public static void main(String[] args) {
         LOG.info("CourseRetriever starting");
-        System.out.println("It works");
         if(args.length == 0) {
-            System.out.println("Please Provide an author name as first argument");
+            LOG.warn("Please provide an author name as first argument");
             return;
         }
         try {
@@ -26,7 +30,11 @@ public class CourseRetriever {
         LOG.info("Retrieving courses for author '{}'", authorId);
         CourseRetrievalService courseRetrievalService = new CourseRetrievalService();
 
-        String coursesToStore = courseRetrievalService.getCoursesFor(authorId);
-        LOG.info("Retrieved the following courses {} ", authorId);
+        List<PluralsightCourse> coursesToStore = courseRetrievalService.getCoursesFor(authorId)
+                .stream()
+                .filter(not(PluralsightCourse::isRetired))
+                .toList();
+
+        LOG.info("Retrieved the following {} courses {} ", coursesToStore.size(), coursesToStore);
     }
 }
